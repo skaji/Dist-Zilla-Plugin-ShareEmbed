@@ -1,16 +1,17 @@
-package Dist::Zilla::Plugin::ShareEmbed;
+package Dist::Zilla::Plugin::ShareEmbed 0.001;
 use 5.14.0;
 use warnings;
-our $VERSION = '0.001';
 
+use File::pushd ();
+use List::MoreUtils ();
+use MIME::Base64 ();
 use Moose;
 use Path::Tiny ();
-use MIME::Base64 ();
-use List::MoreUtils ();
 use namespace::autoclean;
 
 with qw(
     Dist::Zilla::Role::AfterBuild
+    Dist::Zilla::Role::FilePruner
     Dist::Zilla::Role::PrereqSource
 );
 
@@ -48,19 +49,38 @@ if (exists $INC{"Dist/Zilla/Dist/Builder.pm"}) {
     }
 }
 
-sub after_build {
-    my $self = shift;
-    $self->embed_share;
-}
-
 sub has_share {
     my $self = shift;
     $self->zilla->root->child("share")->is_dir;
 }
 
+sub after_build {
+    my $self = shift;
+    return unless $self->has_share;
+
+    $self->embed_share;
+}
+
+sub prune_files {
+    my $self = shift;
+    return unless $self->has_share;
+
+    # XXX This copy is needed.
+    # because $self->zilla->prune_file splices $self->zilla->files
+    my @file = @{ $self->zilla->files };
+
+    for my $file (@file) {
+        if ($file->name =~ m{^share/}) {
+            $self->zilla->prune_file($file);
+        }
+    }
+    return;
+}
+
 sub register_prereqs {
     my $self = shift;
     return unless $self->has_share;
+
     $self->zilla->register_prereqs(
         { phase => 'runtime' },
         'Data::Section::Simple' => 0,
@@ -99,10 +119,6 @@ __DATA__
 
 sub embed_share {
     my $self = shift;
-    unless ($self->has_share) {
-        $self->log("Cannot find share/ directory");
-        return;
-    }
 
     my $share = $self->zilla->root->child("share");
     my %file;
@@ -135,9 +151,11 @@ __END__
 
 =encoding utf-8
 
+=for stopwords pm
+
 =head1 NAME
 
-Dist::Zilla::Plugin::ShareEmbed - Embed share files to pm file
+Dist::Zilla::Plugin::ShareEmbed - Embed share files to .pm file
 
 =head1 SYNOPSIS
 
