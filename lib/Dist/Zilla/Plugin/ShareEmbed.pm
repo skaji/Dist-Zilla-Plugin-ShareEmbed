@@ -7,11 +7,11 @@ use MIME::Base64 ();
 use Moose;
 use Path::Tiny ();
 use namespace::autoclean;
+use B ();
 
 with qw(
     Dist::Zilla::Role::AfterBuild
     Dist::Zilla::Role::FilePruner
-    Dist::Zilla::Role::PrereqSource
 );
 
 has module => (
@@ -56,7 +56,6 @@ sub has_share {
 sub after_build {
     my $self = shift;
     return unless $self->has_share;
-
     $self->embed_share;
 }
 
@@ -76,45 +75,23 @@ sub prune_files {
     return;
 }
 
-sub register_prereqs {
-    my $self = shift;
-    return unless $self->has_share;
-
-    $self->zilla->register_prereqs(
-        { phase => 'runtime' },
-        'Data::Section::Simple' => 0,
-    );
-}
-
-my $TEMPLATE = <<'---';
+my $HEAD = <<'___';
 use strict;
 use warnings;
-use Data::Section::Simple ();
 use MIME::Base64 ();
 
-my $file;
+my %file;
 
+___
+
+my $FOOT = <<'___';
 sub file {
     my $class = shift;
-    if (@_) {
-        my $all = $class->file;
-        return unless $all;
-        return $all->{ $_[0] };
-    } else {
-        return $file if $file;
-        $file = Data::Section::Simple->new->get_data_section;
-        return unless $file;
-        for my $value (values %$file) {
-            $value = MIME::Base64::decode_base64($value);
-        }
-        return $file;
-    }
+    @_ ? $file{$_[0]} : \%file;
 }
 
 1;
-
-__DATA__
----
+___
 
 sub embed_share {
     my $self = shift;
@@ -136,11 +113,14 @@ sub embed_share {
     $self->log("Embedding share/ to $path");
     my $fh = $path->openw_raw;
     print {$fh} "package " . $self->module . ";\n";
-    print {$fh} $TEMPLATE;
+    print {$fh} $HEAD;
     for my $name (sort keys %file) {
-        print {$fh} "\n\@\@ $name\n";
+        my $quoted = B::perlstring($name);
+        print {$fh} "\$file{$quoted} = MIME::Base64::decode_base64(<<'___');\n";
         print {$fh} $file{$name};
+        print {$fh} "___\n\n";
     }
+    print {$fh} $FOOT;
 }
 
 __PACKAGE__->meta->make_immutable;
