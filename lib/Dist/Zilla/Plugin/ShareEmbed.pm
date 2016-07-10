@@ -3,7 +3,6 @@ use 5.14.0;
 use warnings;
 
 use File::pushd ();
-use List::MoreUtils ();
 use MIME::Base64 ();
 use Moose;
 use Path::Tiny ();
