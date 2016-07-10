@@ -7,7 +7,7 @@ use 5.014000;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "Embed share files to pm file",
+  "ABSTRACT" => "Embed share files to .pm file",
   "AUTHOR" => "Shoichi Kaji <skaji\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
@@ -18,6 +18,7 @@ my %WriteMakefileArgs = (
   "NAME" => "Dist::Zilla::Plugin::ShareEmbed",
   "PREREQ_PM" => {
     "Dist::Zilla" => "6.000",
+    "File::pushd" => 0,
     "List::MoreUtils" => 0,
     "Moose" => 0,
     "Path::Tiny" => 0,
@@ -35,6 +36,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "Dist::Zilla" => "6.000",
+  "File::pushd" => 0,
   "List::MoreUtils" => 0,
   "Moose" => 0,
   "Path::Tiny" => 0,

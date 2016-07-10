@@ -2,7 +2,7 @@
 
 # NAME
 
-Dist::Zilla::Plugin::ShareEmbed - Embed share files to pm file
+Dist::Zilla::Plugin::ShareEmbed - Embed share files to .pm file
 
 # SYNOPSIS
 

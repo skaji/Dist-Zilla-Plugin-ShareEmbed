@@ -1,5 +1,5 @@
 {
-   "abstract" : "Embed share files to pm file",
+   "abstract" : "Embed share files to .pm file",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
@@ -38,6 +38,7 @@
       "runtime" : {
          "requires" : {
             "Dist::Zilla" : "6.000",
+            "File::pushd" : "0",
             "List::MoreUtils" : "0",
             "Moose" : "0",
             "Path::Tiny" : "0",
