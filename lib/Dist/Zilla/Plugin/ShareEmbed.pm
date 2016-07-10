@@ -1,15 +1,17 @@
 package Dist::Zilla::Plugin::ShareEmbed;
-use strict;
+use 5.14.0;
 use warnings;
 our $VERSION = '0.001';
 
 use Moose;
 use Path::Tiny ();
 use MIME::Base64 ();
+use List::MoreUtils ();
+use namespace::autoclean;
 
 with qw(
-  Dist::Zilla::Role::AfterBuild
-  Dist::Zilla::Role::AfterRelease
+    Dist::Zilla::Role::AfterBuild
+    Dist::Zilla::Role::PrereqSource
 );
 
 has module => (
@@ -36,14 +38,33 @@ has path => (
     },
 );
 
+if (exists $INC{"Dist/Zilla/Dist/Builder.pm"}) {
+    # XXX I don't know the best way to do this :)
+    package
+        Dist::Zilla::Dist::Builder;
+    no warnings 'redefine';
+    sub _build_share_dir_map {
+        return +{};
+    }
+}
+
 sub after_build {
     my $self = shift;
     $self->embed_share;
 }
 
-sub after_release {
+sub has_share {
     my $self = shift;
-    $self->embed_share;
+    $self->zilla->root->child("share")->is_dir;
+}
+
+sub register_prereqs {
+    my $self = shift;
+    return unless $self->has_share;
+    $self->zilla->register_prereqs(
+        { phase => 'runtime' },
+        'Data::Section::Simple' => 0,
+    );
 }
 
 my $TEMPLATE = <<'---';
@@ -78,12 +99,12 @@ __DATA__
 
 sub embed_share {
     my $self = shift;
-    my $share = $self->zilla->root->child("share");
-    unless ($share->is_dir) {
+    unless ($self->has_share) {
         $self->log("Cannot find share/ directory");
         return;
     }
 
+    my $share = $self->zilla->root->child("share");
     my %file;
     {
         my $guard = File::pushd::pushd("$share");
@@ -107,7 +128,6 @@ sub embed_share {
     }
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
@@ -117,15 +137,36 @@ __END__
 
 =head1 NAME
 
-Dist::Zilla::Plugin::ShareEmbed - Blah blah blah
+Dist::Zilla::Plugin::ShareEmbed - Embed share files to pm file
 
 =head1 SYNOPSIS
 
-  use Dist::Zilla::Plugin::ShareEmbed;
+In your dist.ini:
+
+  [ShareEmbed]
+
+Then
+
+  > dzil build
+
+  > find lib -type f
+  lib/Your/Module.pm
+  lib/Your/Module/Share.pm <=== Created!
 
 =head1 DESCRIPTION
 
-Dist::Zilla::Plugin::ShareEmbed is
+Dist::Zilla::Plugin::ShareEmbed embeds share files to C<lib/Your/Module/Share.pm>,
+so that you can use share files like:
+
+  use Your::Module::Share;
+
+  # returns content of share/foo/bar.txt
+  my $bar = Your::Module::Share->file("foo/bar.txt");
+
+  # returns all contens of files in share directory
+  my $all = Your::Module::Share->file;
+
+This plugin may be useful when you intend to fatpack your modules.
 
 =head1 AUTHOR
 

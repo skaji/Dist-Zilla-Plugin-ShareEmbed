@@ -1,5 +1,5 @@
 {
-   "abstract" : "Blah blah blah",
+   "abstract" : "Embed share files to pm file",
    "author" : [
       "Shoichi Kaji <skaji@cpan.org>"
    ],
@@ -38,7 +38,11 @@
       "runtime" : {
          "requires" : {
             "Dist::Zilla" : "6.000",
-            "perl" : "5.008005"
+            "List::MoreUtils" : "0",
+            "Moose" : "0",
+            "Path::Tiny" : "0",
+            "namespace::autoclean" : "0",
+            "perl" : "v5.14.0"
          }
       },
       "test" : {
