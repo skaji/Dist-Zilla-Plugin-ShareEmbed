@@ -82,15 +82,11 @@ use MIME::Base64 ();
 
 my %file;
 
-___
-
-my $FOOT = <<'___';
 sub file {
     my $class = shift;
     @_ ? $file{$_[0]} : \%file;
 }
 
-1;
 ___
 
 sub embed_share {
@@ -120,7 +116,7 @@ sub embed_share {
         print {$fh} $file{$name};
         print {$fh} "___\n\n";
     }
-    print {$fh} $FOOT;
+    print {$fh} "1;\n";
 }
 
 __PACKAGE__->meta->make_immutable;
