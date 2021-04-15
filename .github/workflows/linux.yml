@@ -25,6 +25,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: perl -V
         run: perl -V
+      - id: perl-config
+        run: perl -MConfig -le 'print "::set-output name=key::$Config{version}-$Config{archname}"'
+      - uses: actions/cache@v2
+        with:
+          path: ~/.perl-cpm/builds
+          key: ${{ steps.perl-config.outputs.key }}
       - name: Install Dependencies
         run: curl -fsSL --compressed https://git.io/cpm | perl - install -g --with-configure --with-develop --with-recommends
       - name: Run Tests
