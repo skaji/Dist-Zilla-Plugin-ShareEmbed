@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/skaji/Dist-Zilla-Plugin-ShareEmbed.svg?branch=master)](https://travis-ci.org/skaji/Dist-Zilla-Plugin-ShareEmbed)
+[![Actions Status](https://github.com/skaji/Dist-Zilla-Plugin-ShareEmbed/workflows/linux/badge.svg)](https://github.com/skaji/Dist-Zilla-Plugin-ShareEmbed/actions)
 
 # NAME
 
