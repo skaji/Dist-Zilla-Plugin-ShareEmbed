@@ -1,4 +1,4 @@
-package Dist::Zilla::Plugin::ShareEmbed 0.003;
+package Dist::Zilla::Plugin::ShareEmbed 0.004;
 use 5.14.0;
 use warnings;
 
